@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Dashboard Daily GA_CSA</title>
+    <!-- Chart.js, Chart.js DataLabels Plugin, html2canvas & Fonts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --primary: #2563eb;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --magenta: #FF03A5;
+            --wa-green: #25d366;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            padding: 8px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .dashboard-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding-bottom: 60px;
+        }
+
+        #snapArea {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background-color: var(--bg-color);
+        }
+
+        .header {
+            background: var(--card-bg);
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .header h1 {
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        .controls-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-grow: 1;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            font-size: 11px;
+        }
+
+        select {
+            flex-grow: 1;
+            padding: 6px 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background-color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--primary);
+            outline: none;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 4px;
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            color: #ffffff;
+            padding: 6px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-excel { background-color: #16a34a; }
+        .btn-camera { background-color: #475569; }
+        .btn-wa { background-color: var(--wa-green); }
+
+        .btn-action svg {
+            width: 12px;
+            height: 12px;
+            fill: currentColor;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .card-title {
+            font-size: 9px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .card-body-inline {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            margin-top: 4px;
+        }
+
+        .card-value {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .badge {
+            padding: 1px 4px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 700;
+        }
+
+        .badge-pos { background-color: #d1fae5; color: #065f46; }
+        .badge-neg { background-color: #fee2e2; color: #991b1b; }
+        .badge-info { background-color: #fce7f3; color: #be185d; }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chart-card {
+            background: var(--card-bg);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .chart-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .target-box-inline {
+            background: #f1f5f9;
+            border-radius: 4px;
+            padding: 3px 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .progress-bar-bg {
+            width: 50px;
+            height: 5px;
+            background: #cbd5e1;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--magenta);
+            border-radius: 3px;
+        }
+
+        .chart-container {
+            position: relative;
+            flex-grow: 1;
+            width: 100%;
+            min-height: 210px;
+        }
+
+        .scorecard-container {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px;
+            margin-bottom: 0px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .scorecard-header {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 4px;
+        }
+
+        .score-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 10px;
+            padding: 2px 0;
+        }
+
+        .score-label {
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .score-val {
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .rank-table-container {
+            overflow-y: auto;
+            max-height: 210px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-size: 10px;
+        }
+
+        .rank-section-title {
+            font-weight: 700;
+            font-size: 9px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 2px;
+            text-transform: uppercase;
+        }
+
+        .rank-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+            padding: 4px 6px;
+            border-radius: 4px;
+        }
+
+        .rank-name {
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 75%;
+        }
+
+        .rank-val {
+            font-weight: 700;
+            color: var(--magenta);
+        }
+
+        #toast {
+            visibility: hidden;
+            min-width: 200px;
+            background-color: #0f172a;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: fixed;
+            z-index: 1000;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-size: 11px;
+            font-weight: 600;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+        @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
+        @keyframes fadeout { from { bottom: 30px; opacity: 1; } to { bottom: 0; opacity: 0; } }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    
+    <div id="snapArea">
+        <div class="header">
+            <div>
+                <h1>Dashboard Daily GA_CSA</h1>
+                <p>Oktober vs September (Target MTD, Proyeksi & Evaluasi - Cut Off 18 Oct)</p>
+            </div>
+            <div class="controls-group">
+                <div class="filter-group">
+                    <label for="branchSelect">Branch:</label>
+                    <select id="branchSelect" onchange="updateDashboard()"></select>
+                </div>
+                <div class="action-buttons">
+                    <a href="https://o365indosat-my.sharepoint.com/:x:/g/personal/82228787_ioh_co_id/IQAYW0UQzN7eT6Qu0oMT2ujGAfigFicHRn49qBBn29k0GXI?e=cmaBYp" class="btn-action btn-excel" target="_blank" title="Download Excel">
+                        <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                        Excel
+                    </a>
+                    <button class="btn-action btn-camera" onclick="captureDashboard()" title="Capture Screenshot to Clipboard">
+                        <svg viewBox="0 0 24 24"><path d="M4 4h3l2-2h6l2 2h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2m8 3a5 5 0 0 0-5 5a5 5 0 0 0 5 5a5 5 0 0 0 5-5a5 5 0 0 0-5-5m0 2a3 3 0 0 1 3 3a3 3 0 0 1-3 3a3 3 0 0 1-3-3a3 3 0 0 1 3-3z"/></svg>
+                        Snap
+                    </button>
+                    <button class="btn-action btn-wa" onclick="copyWhatsAppText()" title="Copy WA Summary">
+                        <svg viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.59 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.57L5.06 16.26C4.24 14.93 3.81 13.44 3.81 11.91C3.81 7.42 7.5 3.67 12.05 3.67M8.53 7.33C8.37 7.33 8.1 7.39 7.87 7.64C7.65 7.89 7 8.5 7 9.75C7 11 7.92 12.22 8.05 12.4C8.18 12.58 9.81 15.12 12.31 16.21C14.38 17.12 14.8 16.95 15.25 16.91C15.7 16.86 16.66 16.33 16.86 15.75C17.06 15.17 17.06 14.67 17 14.58C16.94 14.49 16.79 14.43 16.53 14.3C16.27 14.17 14.98 13.54 14.74 13.45C14.5 13.36 14.33 13.31 14.16 13.56C13.99 13.81 13.5 14.39 13.35 14.57C13.2 14.75 13.05 14.77 12.79 14.64C12.53 14.51 11.69 14.24 10.7 13.36C9.92 12.67 9.39 11.82 9.24 11.57C9.09 11.32 9.22 11.19 9.35 11.06C9.47 10.94 9.62 10.75 9.75 10.59C9.88 10.43 9.92 10.31 10 10.15C10.08 9.99 10.04 9.85 9.97 9.72C9.9 9.59 9.38 8.32 9.16 7.81C8.95 7.32 8.73 7.39 8.53 7.33Z"/></svg>
+                        WA
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="card">
+                <div class="card-title">Target Oktober</div>
+                <div class="card-body-inline">
+                    <span class="card-value" id="targetValue">0</span>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title">MTD (Oct 1-18)</div>
+                <div class="card-body-inline">
+                    <span class="card-value" id="mtdValue">0</span>
+                    <span class="badge badge-info" id="achBadge">0% Ach</span>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title">LMTD (Sep 1-18)</div>
+                <div class="card-body-inline">
+                    <span class="card-value" id="lmtdValue">0</span>
+                    <span style="font-size: 9px; color: var(--text-muted);">Baseline</span>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title">Selisih (+/-)</div>
+                <div class="card-body-inline">
+                    <span class="card-value" id="diffValue">0</span>
+                    <span class="badge" id="diffBadge">-</span>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title" id="mcCardTitle">Total MC</div>
+                <div class="card-body-inline">
+                    <span class="card-value" id="mcCountValue">0</span>
+                    <span id="mcSubText" style="font-size: 9px; color: var(--text-muted);">Cluster</span>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title">Proyeksi Closing</div>
+                <div class="card-body-inline">
+                    <span class="card-value" id="projValue">0</span>
+                    <span class="badge badge-info" id="projAchBadge">0% Target</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-header-row">
+                <div class="chart-title">1. Daily Trend Line (Oct vs Sep: Tgl 1-18)</div>
+                <div class="target-box-inline">
+                    <span>Ach: <strong id="progressPctText">0%</strong></span>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="progressBarFill" style="width: 0%;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="lineChartDaily"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="chart-card">
+            <div class="chart-header-row">
+                <div class="chart-title">2. MTD vs LMTD</div>
+            </div>
+            <div class="chart-container">
+                <canvas id="barChartMtdLmtd"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-header-row">
+                <div class="chart-title" id="mcChartTitle">3. Pencapaian per Micro Cluster</div>
+            </div>
+            <div class="chart-container">
+                <canvas id="barChartMc"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-header-row">
+                <div class="chart-title" id="scorecardHeaderTitle">Scorecard Parameter (CSA)</div>
+            </div>
+            <div class="scorecard-container">
+                <div class="scorecard-header">
+                    <span id="scorecardTitle">Parameter Evaluasi</span>
+                    <span id="scorecardGrade" class="badge badge-info">Grade: Good</span>
+                </div>
+                <div class="score-row">
+                    <span class="score-label">1. Pencapaian Target (% Ach)</span>
+                    <span class="score-val" id="scoreAch">0%</span>
+                </div>
+                <div class="score-row">
+                    <span class="score-label">2. Growth vs LMTD (YoY/MoM Trend)</span>
+                    <span class="score-val" id="scoreGrowth">0%</span>
+                </div>
+                <div class="score-row">
+                    <span class="score-label">3. Proyeksi Achievement Closing</span>
+                    <span class="score-val" id="scoreProj">0%</span>
+                </div>
+                <div class="score-row">
+                    <span class="score-label">4. Status Kinerja / Evaluasi</span>
+                    <span class="score-val" id="scoreStatus">-</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chart-card">
+            <div class="chart-header-row">
+                <div class="chart-title">Branch Rank (% Ach)</div>
+            </div>
+            <div class="rank-table-container" id="branchRankContainer"></div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-header-row">
+                <div class="chart-title" id="mcRankHeader">Top & Bottom Micro Cluster (% Ach)</div>
+            </div>
+            <div class="rank-table-container" id="mcRankContainer"></div>
+        </div>
+    </div>
+</div>
+
+<div id="toast">Notifikasi</div>
+
+<script>
+    Chart.register(ChartDataLabels);
+
+    const dataset = {
+        "ALL REGION (TOTAL CSA)": {
+            "target": 133768,
+            "lmtd": 61647,
+            "mtd": 54019,
+            "sepDaily": [2588, 2140, 2553, 3653, 3043, 2091, 4352, 3967, 4026, 4374, 3906, 3807, 2350, 4025, 3669, 3791, 3821, 3491],
+            "octDaily": [1909, 2229, 2316, 2283, 3002, 3214, 3001, 3860, 3850, 3097, 2602, 3906, 3607, 3693, 2961, 3503, 2964, 2500],
+            "mcs": {
+                "BATAM": { "target": 21516, "lmtd": 11948, "mtd": 10402 },
+                "BATANGHARI": { "target": 10755, "lmtd": 4619, "mtd": 3559 },
+                "BUKITTINGGI": { "target": 11515, "lmtd": 3887, "mtd": 4184 },
+                "BUNGO": { "target": 9462, "lmtd": 5166, "mtd": 4499 },
+                "DUMAI": { "target": 14617, "lmtd": 6682, "mtd": 5893 },
+                "JAMBI": { "target": 14839, "lmtd": 9853, "mtd": 5007 },
+                "KAMPAR": { "target": 9322, "lmtd": 4806, "mtd": 4707 },
+                "PADANG": { "target": 12508, "lmtd": 3525, "mtd": 3437 },
+                "PEKANBARU": { "target": 20647, "lmtd": 8408, "mtd": 9085 },
+                "SOLOK": { "target": 8587, "lmtd": 2753, "mtd": 3246 }
+            }
+        },
+        "BATAM": {
+            "target": 21516,
+            "lmtd": 11948,
+            "mtd": 10402,
+            "sepDaily": [632, 663, 541, 734, 569, 431, 618, 517, 603, 786, 712, 754, 665, 771, 679, 795, 774, 704],
+            "octDaily": [424, 562, 573, 524, 717, 509, 628, 687, 583, 425, 458, 650, 1117, 784, 469, 532, 431, 431],
+            "mcs": {
+                "MC-BATAM EAST": { "target": 6754, "lmtd": 4350, "mtd": 3352 },
+                "MC-BATAM SOUTH": { "target": 3088, "lmtd": 2350, "mtd": 2010 },
+                "MC-BATAM WEST": { "target": 5516, "lmtd": 3150, "mtd": 2580 },
+                "MC-BINTAN": { "target": 1633, "lmtd": 550, "mtd": 1280 },
+                "MC-KARIMUN": { "target": 2041, "lmtd": 600, "mtd": 410 },
+                "MC-TANJUNG PINANG": { "target": 2484, "lmtd": 948, "mtd": 770 }
+            }
+        },
+        "BATANGHARI": {
+            "target": 10755,
+            "lmtd": 4619,
+            "mtd": 3559,
+            "sepDaily": [133, 135, 260, 239, 155, 178, 633, 392, 343, 477, 154, 206, 112, 231, 191, 294, 317, 169],
+            "octDaily": [294, 317, 169, 128, 141, 398, 158, 114, 147, 115, 163, 105, 165, 162, 129, 254, 158, 158],
+            "mcs": {
+                "MC-BATANG HARI": { "target": 3162, "lmtd": 1250, "mtd": 1250 },
+                "MC-TANJUNG JABUNG BARAT": { "target": 2561, "lmtd": 920, "mtd": 640 },
+                "MC-TANJUNG JABUNG TIMUR": { "target": 2055, "lmtd": 999, "mtd": 820 },
+                "MC-TEBO": { "target": 2977, "lmtd": 1450, "mtd": 849 }
+            }
+        },
+        "BUKITTINGGI": {
+            "target": 11515,
+            "lmtd": 3887,
+            "mtd": 4184,
+            "sepDaily": [133, 129, 144, 178, 213, 138, 145, 153, 165, 172, 248, 149, 149, 151, 247, 716, 404, 253],
+            "octDaily": [716, 404, 253, 185, 165, 554, 375, 241, 378, 226, 499, 268, 311, 402, 566, 225, 163, 163],
+            "mcs": {
+                "MC-BUKITTINGGI": { "target": 3403, "lmtd": 1010, "mtd": 1410 },
+                "MC-LIMA PULUH KOTA": { "target": 2093, "lmtd": 550, "mtd": 840 },
+                "MC-PASAMAN": { "target": 1571, "lmtd": 330, "mtd": 270 },
+                "MC-PASAMAN BARAT NORTH": { "target": 1308, "lmtd": 800, "mtd": 500 },
+                "MC-PASAMAN BARAT SOUTH": { "target": 1832, "lmtd": 517, "mtd": 630 },
+                "MC-PAYAKUMBUH": { "target": 1308, "lmtd": 680, "mtd": 534 }
+            }
+        },
+        "BUNGO": {
+            "target": 9462,
+            "lmtd": 5166,
+            "mtd": 4499,
+            "sepDaily": [122, 129, 159, 120, 84, 173, 1159, 439, 367, 468, 217, 76, 134, 455, 226, 284, 317, 237],
+            "octDaily": [284, 317, 237, 213, 70, 358, 199, 87, 181, 131, 145, 108, 125, 236, 383, 261, 390, 231],
+            "mcs": {
+                "MC-BUNGO": { "target": 3059, "lmtd": 1520, "mtd": 1040 },
+                "MC-KERINCI": { "target": 1879, "lmtd": 910, "mtd": 1210 },
+                "MC-MERANGIN": { "target": 2346, "lmtd": 1380, "mtd": 1110 },
+                "MC-SAROLANGUN": { "target": 2178, "lmtd": 1356, "mtd": 1139 }
+            }
+        },
+        "DUMAI": {
+            "target": 14617,
+            "lmtd": 6682,
+            "mtd": 5893,
+            "sepDaily": [301, 158, 322, 296, 263, 232, 239, 453, 599, 520, 331, 551, 298, 473, 508, 373, 478, 287],
+            "octDaily": [373, 478, 287, 545, 260, 355, 328, 244, 234, 302, 235, 278, 406, 377, 352, 288, 354, 309],
+            "mcs": {
+                "MC-BENGKALIS": { "target": 3884, "lmtd": 1750, "mtd": 1520 },
+                "MC-DUMAI": { "target": 2863, "lmtd": 1030, "mtd": 760 },
+                "MC-ROKAN HILIR EAST": { "target": 2146, "lmtd": 1410, "mtd": 1310 },
+                "MC-ROKAN HILIR WEST": { "target": 2146, "lmtd": 1100, "mtd": 1070 },
+                "MC-SIAK EAST": { "target": 1789, "lmtd": 780, "mtd": 433 },
+                "MC-SIAK WEST": { "target": 1789, "lmtd": 652, "mtd": 800 }
+            }
+        },
+        "JAMBI": {
+            "target": 14839,
+            "lmtd": 9853,
+            "mtd": 5007,
+            "sepDaily": [378, 200, 319, 1049, 649, 236, 560, 926, 857, 706, 1045, 1082, 213, 347, 289, 290, 269, 438],
+            "octDaily": [290, 269, 438, 267, 180, 278, 367, 418, 278, 417, 285, 206, 436, 240, 218, 189, 279, 629],
+            "mcs": {
+                "MC-JAMBI EAST": { "target": 5169, "lmtd": 5450, "mtd": 1560 },
+                "MC-JAMBI WEST": { "target": 5164, "lmtd": 2250, "mtd": 1690 },
+                "MC-MUARO JAMBI EAST": { "target": 2157, "lmtd": 820, "mtd": 680 },
+                "MC-MUARO JAMBI WEST": { "target": 2349, "lmtd": 1333, "mtd": 1077 }
+            }
+        },
+        "KAMPAR": {
+            "target": 9322,
+            "lmtd": 4806,
+            "mtd": 4707,
+            "sepDaily": [187, 133, 162, 194, 242, 165, 187, 306, 252, 309, 289, 198, 161, 413, 410, 259, 334, 605],
+            "octDaily": [259, 334, 605, 212, 171, 219, 236, 325, 273, 261, 304, 240, 216, 184, 296, 364, 453, 182],
+            "mcs": {
+                "MC-KAMPAR EAST": { "target": 2536, "lmtd": 1500, "mtd": 1720 },
+                "MC-KAMPAR NORTH": { "target": 2691, "lmtd": 1020, "mtd": 950 },
+                "MC-KAMPAR WEST": { "target": 998, "lmtd": 480, "mtd": 540 },
+                "MC-KUANTAN SINGINGI": { "target": 1426, "lmtd": 770, "mtd": 820 },
+                "MC-ROKAN HULU": { "target": 1671, "lmtd": 736, "mtd": 677 }
+            }
+        },
+        "PADANG": {
+            "target": 12508,
+            "lmtd": 3525,
+            "mtd": 3437,
+            "sepDaily": [229, 170, 171, 295, 154, 170, 191, 175, 179, 228, 186, 183, 185, 204, 220, 193, 193, 199],
+            "octDaily": [193, 193, 199, 185, 164, 300, 263, 220, 235, 131, 244, 199, 247, 331, 190, 210, 178, 201],
+            "mcs": {
+                "MC-PADANG CENTRAL": { "target": 3640, "lmtd": 870, "mtd": 820 },
+                "MC-PADANG NORTH": { "target": 2643, "lmtd": 960, "mtd": 850 },
+                "MC-PADANG SOUTH": { "target": 1378, "lmtd": 520, "mtd": 430 },
+                "MC-PARIAMAN": { "target": 2612, "lmtd": 900, "mtd": 830 },
+                "MC-PESISIR SELATAN NORTH": { "target": 900, "lmtd": 195, "mtd": 220 },
+                "MC-PESISIR SELATAN SOUTH": { "target": 1335, "lmtd": 180, "mtd": 287 }
+            }
+        },
+        "PEKANBARU": {
+            "target": 20647,
+            "lmtd": 8408,
+            "mtd": 9085,
+            "sepDaily": [352, 326, 385, 378, 536, 264, 431, 432, 557, 552, 519, 497, 284, 755, 687, 443, 556, 454],
+            "octDaily": [443, 556, 454, 342, 268, 433, 344, 364, 413, 434, 603, 319, 520, 351, 439, 427, 724, 450],
+            "mcs": {
+                "MC-INDRAGIRI HILIR": { "target": 1431, "lmtd": 960, "mtd": 1020 },
+                "MC-INDRAGIRI HULU EAST": { "target": 1124, "lmtd": 450, "mtd": 500 },
+                "MC-INDRAGIRI HULU WEST": { "target": 732, "lmtd": 330, "mtd": 240 },
+                "MC-PEKANBARU EAST": { "target": 4877, "lmtd": 1650, "mtd": 1560 },
+                "MC-PEKANBARU NORTH": { "target": 4773, "lmtd": 1620, "mtd": 2240 },
+                "MC-PEKANBARU WEST": { "target": 5877, "lmtd": 2400, "mtd": 2650 },
+                "MC-PELALAWAN": { "target": 1833, "lmtd": 1138, "mtd": 875 }
+            }
+        },
+        "SOLOK": {
+            "target": 8587,
+            "lmtd": 2753,
+            "mtd": 3246,
+            "sepDaily": [121, 97, 90, 170, 178, 104, 189, 174, 104, 156, 205, 111, 149, 225, 212, 144, 179, 145],
+            "octDaily": [144, 179, 145, 136, 144, 225, 141, 112, 112, 252, 134, 215, 172, 144, 136, 212, 161, 107],
+            "mcs": {
+                "MC-DHARMASRAYA": { "target": 1446, "lmtd": 690, "mtd": 640 },
+                "MC-SAWAHLUNTO": { "target": 1254, "lmtd": 260, "mtd": 270 },
+                "MC-SOLOK": { "target": 2511, "lmtd": 760, "mtd": 850 },
+                "MC-SOLOK SELATAN": { "target": 1061, "lmtd": 235, "mtd": 410 },
+                "MC-TANAH DATAR": { "target": 2315, "lmtd": 918, "mtd": 1076 }
+            }
+        }
+    };
+
+    let lineChartDaily = null, barChartMtdLmtd = null, barChartMc = null;
+
+    function initDropdown() {
+        const select = document.getElementById('branchSelect');
+        Object.keys(dataset).forEach(branch => {
+            const opt = document.createElement('option');
+            opt.value = branch;
+            opt.innerHTML = branch;
+            select.appendChild(opt);
+        });
+    }
+
+    function formatNum(val) { return new Intl.NumberFormat('id-ID').format(val); }
+
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.innerText = msg;
+        t.className = "show";
+        setTimeout(() => { t.className = t.className.replace("show", ""); }, 3000);
+    }
+
+    function captureDashboard() {
+        const el = document.getElementById('snapArea');
+        html2canvas(el, { scale: 2, useCORS: true }).then(canvas => {
+            canvas.toBlob(blob => {
+                const item = new ClipboardItem({ "image/png": blob });
+                navigator.clipboard.writeText("").then(() => {
+                    navigator.clipboard.write([item]).then(() => {
+                        showToast("📸 Screenshot bagian atas berhasil disalin ke Clipboard!");
+                    });
+                });
+            });
+        }).catch(err => {
+            showToast("Gagal mengambil screenshot.");
+        });
+    }
+
+    function copyWhatsAppText() {
+        let text = `Semangat Pagi\n\n`;
+        text += `Abang2 HoA, berikut progess GA end of 18 Oct, \n`;
+        text += `Terlampir juga file Html untuk dashboard tersebut dan rekan2 dapat mendownlod file excelnya disana.\n\n`;
+        text += `Berikut link file nya:\n`;
+        text += `https://ga-oct.netlify.app\n\n`;
+        text += `source data: PowerBI IOH_MKT_HighLevel`;
+
+        navigator.clipboard.writeText(text).then(() => {
+            showToast("💬 Teks WhatsApp berhasil disalin ke Clipboard!");
+        });
+    }
+
+    function updateScorecard(selectedBranch, achPct, growthPct, projAchPct) {
+        const titleEl = document.getElementById('scorecardTitle');
+        const gradeEl = document.getElementById('scorecardGrade');
+        const scoreAchEl = document.getElementById('scoreAch');
+        const scoreGrowthEl = document.getElementById('scoreGrowth');
+        const scoreProjEl = document.getElementById('scoreProj');
+        const scoreStatusEl = document.getElementById('scoreStatus');
+
+        titleEl.innerText = `Parameter Evaluasi (${selectedBranch})`;
+        scoreAchEl.innerText = `${achPct.toFixed(1)}%`;
+        
+        const growthSign = growthPct >= 0 ? '+' : '';
+        scoreGrowthEl.innerText = `${growthSign}${growthPct.toFixed(1)}%`;
+        scoreGrowthEl.style.color = growthPct >= 0 ? '#065f46' : '#991b1b';
+
+        scoreProjEl.innerText = `${projAchPct.toFixed(1)}%`;
+
+        let statusText = projAchPct >= 100 ? 'Optimal & On Track' : 'Perlu Acceleration / Under Target';
+        let gradeText = projAchPct >= 100 ? 'Grade A (Good)' : (projAchPct >= 80 ? 'Grade B (Fair)' : 'Grade C (Low)');
+        let gradeClass = projAchPct >= 100 ? 'badge badge-pos' : (projAchPct >= 80 ? 'badge badge-info' : 'badge badge-neg');
+
+        gradeEl.className = gradeClass;
+        gradeEl.innerText = gradeText;
+        scoreStatusEl.innerText = statusText;
+    }
+
+    function updateRankings() {
+        const branchEntries = Object.keys(dataset)
+            .filter(b => b !== "ALL REGION (TOTAL CSA)")
+            .map(b => {
+                const item = dataset[b];
+                const ach = item.target > 0 ? (item.mtd / item.target) * 100 : 0;
+                return { name: b, ach: ach };
+            });
+        
+        branchEntries.sort((a, b) => b.ach - a.ach);
+        const top3Branch = branchEntries.slice(0, 3);
+        const bottom3Branch = [...branchEntries].reverse().slice(0, 3);
+
+        let branchHtml = `<div class="rank-section-title">TOP 3 BRANCH (% ACH)</div>`;
+        top3Branch.forEach((item, idx) => {
+            branchHtml += `<div class="rank-row"><span class="rank-name">${idx+1}. ${item.name}</span><span class="rank-val">${item.ach.toFixed(1)}%</span></div>`;
+        });
+        branchHtml += `<div class="rank-section-title">BOTTOM 3 BRANCH (% ACH)</div>`;
+        bottom3Branch.forEach((item, idx) => {
+            branchHtml += `<div class="rank-row"><span class="rank-name">${idx+1}. ${item.name}</span><span class="rank-val" style="color: #991b1b;">${item.ach.toFixed(1)}%</span></div>`;
+        });
+        document.getElementById('branchRankContainer').innerHTML = branchHtml;
+    }
+
+    function updateMcRankings(selectedBranch, currentData) {
+        let mcEntries = [];
+        
+        if (selectedBranch === "ALL REGION (TOTAL CSA)") {
+            Object.keys(dataset).forEach(b => {
+                if (b !== "ALL REGION (TOTAL CSA)") {
+                    const branchData = dataset[b];
+                    Object.keys(branchData.mcs).forEach(mc => {
+                        const item = branchData.mcs[mc];
+                        const ach = item.target > 0 ? (item.mtd / item.target) * 100 : 0;
+                        mcEntries.push({ name: mc, ach: ach, mtd: item.mtd });
+                    });
+                }
+            });
+        } else {
+            mcEntries = Object.keys(currentData.mcs).map(mc => {
+                const item = currentData.mcs[mc];
+                const ach = item.target > 0 ? (item.mtd / item.target) * 100 : 0;
+                return { name: mc, ach: ach, mtd: item.mtd };
+            });
+        }
+
+        mcEntries.sort((a, b) => b.ach - a.ach);
+        const topMc = mcEntries.slice(0, 5);
+        const bottomMc = [...mcEntries].reverse().slice(0, 5);
+
+        const isAll = selectedBranch === "ALL REGION (TOTAL CSA)";
+        document.getElementById('mcRankHeader').innerText = isAll ? "Top & Bottom Micro Cluster (% Ach)" : `Top & Bottom Micro Cluster (${selectedBranch})`;
+
+        let mcHtml = `<div class="rank-section-title">TOP 5 MICRO CLUSTER (% ACH)</div>`;
+        topMc.forEach((item, idx) => {
+            mcHtml += `<div class="rank-row"><span class="rank-name">${idx+1}. ${item.name}</span><span class="rank-val">${item.ach.toFixed(1)}%</span></div>`;
+        });
+        mcHtml += `<div class="rank-section-title">BOTTOM 5 MICRO CLUSTER (% ACH)</div>`;
+        bottomMc.forEach((item, idx) => {
+            mcHtml += `<div class="rank-row"><span class="rank-name">${idx+1}. ${item.name}</span><span class="rank-val" style="color: #991b1b;">${item.ach.toFixed(1)}%</span></div>`;
+        });
+        document.getElementById('mcRankContainer').innerHTML = mcHtml;
+    }
+
+    function updateDashboard() {
+        const selectedBranch = document.getElementById('branchSelect').value;
+        const currentData = dataset[selectedBranch];
+
+        const target = currentData.target;
+        const mtd = currentData.mtd;
+        const lmtd = currentData.lmtd;
+        const diff = mtd - lmtd;
+        const achPct = target > 0 ? (mtd / target) * 100 : 0;
+        const growthPct = lmtd > 0 ? (diff / lmtd) * 100 : 0;
+        const projClosing = (mtd / 18) * 31;
+        const projAchPct = target > 0 ? (projClosing / target) * 100 : 0;
+
+        const mcKeys = Object.keys(currentData.mcs);
+        const mcCount = mcKeys.length;
+
+        document.getElementById('targetValue').innerText = formatNum(target);
+        document.getElementById('mtdValue').innerText = formatNum(mtd);
+        document.getElementById('achBadge').innerText = `${achPct.toFixed(1)}% Ach`;
+        document.getElementById('lmtdValue').innerText = formatNum(lmtd);
+        
+        const diffValueEl = document.getElementById('diffValue');
+        const diffBadgeEl = document.getElementById('diffBadge');
+        diffValueEl.innerText = `${diff >= 0 ? '+' : ''}${formatNum(diff)}`;
+        diffBadgeEl.className = `badge ${diff >= 0 ? 'badge-pos' : 'badge-neg'}`;
+        diffBadgeEl.innerText = `${diff >= 0 ? '+' : ''}${growthPct.toFixed(1)}%`;
+
+        const isAll = selectedBranch === "ALL REGION (TOTAL CSA)";
+        document.getElementById('mcCardTitle').innerText = isAll ? "Total MC" : "Total MC in Branch";
+        document.getElementById('mcCountValue').innerText = mcCount;
+        document.getElementById('mcSubText').innerText = isAll ? "Clusters" : "Sub-Clusters";
+
+        document.getElementById('projValue').innerText = formatNum(Math.round(projClosing));
+        document.getElementById('projAchBadge').innerText = `${projAchPct.toFixed(1)}% Target`;
+
+        document.getElementById('progressPctText').innerText = `${achPct.toFixed(1)}%`;
+        document.getElementById('progressBarFill').style.width = `${Math.min(achPct, 100)}%`;
+
+        updateScorecard(selectedBranch, achPct, growthPct, projAchPct);
+        updateRankings();
+        updateMcRankings(selectedBranch, currentData);
+
+        const commonGridConfig = {
+            grid: {
+                color: '#f1f5f9',
+                borderColor: '#e2e8f0',
+                borderWidth: 1
+            }
+        };
+
+        // Render Line Chart (Warna garis LMTD abu-abu #64748b)
+        if (lineChartDaily) lineChartDaily.destroy();
+        const ctxLine = document.getElementById('lineChartDaily').getContext('2d');
+        const labels = Array.from({length: 18}, (_, i) => `Tgl ${i+1}`);
+        
+        const allValues = [...currentData.octDaily, ...currentData.sepDaily];
+        const minVal = Math.min(...allValues);
+        const customMin = Math.max(0, Math.floor((minVal - 30) / 50) * 50);
+
+        lineChartDaily = new Chart(ctxLine, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Oct (MTD)',
+                        data: currentData.octDaily,
+                        borderColor: '#FF03A5',
+                        backgroundColor: 'rgba(255, 3, 165, 0.12)',
+                        borderWidth: 2,
+                        tension: 0.2,
+                        fill: true,
+                        pointRadius: 3,
+                        order: 2
+                    },
+                    {
+                        label: 'Sep (LMTD)',
+                        data: currentData.sepDaily,
+                        borderColor: '#64748b',
+                        backgroundColor: 'transparent',
+                        borderWidth: 1.5,
+                        borderDash: [4, 4],
+                        tension: 0.2,
+                        fill: false,
+                        pointRadius: 2,
+                        spanGaps: true,
+                        order: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 } } },
+                    datalabels: { display: false }
+                },
+                scales: {
+                    x: { 
+                        ticks: { font: { size: 8 } },
+                        grid: { display: false }
+                    },
+                    y: { 
+                        beginAtZero: false,
+                        min: customMin,
+                        ticks: { font: { size: 8 } },
+                        grid: commonGridConfig.grid
+                    }
+                }
+            }
+        });
+
+        // Render Bar Chart MTD vs LMTD
+        if (barChartMtdLmtd) barChartMtdLmtd.destroy();
+        const ctxBarMtd = document.getElementById('barChartMtdLmtd').getContext('2d');
+        barChartMtdLmtd = new Chart(ctxBarMtd, {
+            type: 'bar',
+            data: {
+                labels: ['LMTD', 'MTD'],
+                datasets: [{
+                    data: [lmtd, mtd],
+                    backgroundColor: ['#94a3b8', '#FF03A5'],
+                    borderRadius: 4,
+                    maxBarThickness: 65
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    datalabels: {
+                        anchor: 'center',
+                        align: 'center',
+                        color: '#ffffff',
+                        font: { size: 12, weight: 'bold' },
+                        formatter: (val, ctx) => {
+                            const lbl = ctx.chart.data.labels[ctx.dataIndex];
+                            return `${lbl}\n${formatNum(val)}`;
+                        }
+                    }
+                },
+                scales: {
+                    x: { 
+                        ticks: { font: { size: 10, weight: 'bold' } },
+                        grid: { display: false }
+                    },
+                    y: { 
+                        display: true,
+                        ticks: { 
+                            font: { size: 8 },
+                            callback: function(value) {
+                                return formatNum(value);
+                            }
+                        },
+                        grid: commonGridConfig.grid
+                    }
+                }
+            }
+        });
+
+        // Render Bar Chart MC / Branch breakdown
+        if (barChartMc) barChartMc.destroy();
+        const ctxBarMc = document.getElementById('barChartMc').getContext('2d');
+        const mcLabels = mcKeys;
+        const mcMtdData = mcKeys.map(k => currentData.mcs[k].mtd);
+        const mcTargetData = mcKeys.map(k => currentData.mcs[k].target);
+
+        document.getElementById('mcChartTitle').innerText = isAll ? "3. Pencapaian per Branch" : "3. Pencapaian per Micro Cluster";
+
+        barChartMc = new Chart(ctxBarMc, {
+            type: 'bar',
+            data: {
+                labels: mcLabels,
+                datasets: [
+                    {
+                        label: 'MTD',
+                        data: mcMtdData,
+                        backgroundColor: '#FF03A5',
+                        borderRadius: 3,
+                        maxBarThickness: 28
+                    },
+                    {
+                        label: 'Target',
+                        data: mcTargetData,
+                        backgroundColor: '#cbd5e1',
+                        borderRadius: 3,
+                        maxBarThickness: 28
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 8 } } },
+                    datalabels: { display: false }
+                },
+                scales: {
+                    x: { 
+                        ticks: { font: { size: 7 }, maxRotation: 45, minRotation: 45 },
+                        grid: { display: false }
+                    },
+                    y: { 
+                        ticks: { font: { size: 8 } },
+                        grid: commonGridConfig.grid
+                    }
+                }
+            }
+        });
+    }
+
+    window.onload = function() {
+        initDropdown();
+        updateDashboard();
+    };
+</script>
+</body>
+</html>
